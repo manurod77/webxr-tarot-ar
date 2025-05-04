@@ -2,30 +2,40 @@
 <html>
 <head>
     <title>Tarot AR</title>
-    <link rel="stylesheet" href="css/style.css">
     <style>
         body { margin: 0; overflow: hidden; }
-        #overlay { position: absolute; top: 20px; left: 20px; background-color: rgba(0, 0, 0, 0.7); color: white; padding: 10px; z-index: 1; }
-        #options { margin-bottom: 10px; }
-        #interpretation { margin-top: 10px; }
+        canvas { display: block; }
+        #ui-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+        button, select {
+            font-size: 16px;
+            padding: 10px;
+            margin: 5px;
+        }
     </style>
 </head>
 <body>
-    <div id="overlay">
-        <div id="options">
-            <label for="deckType">Tipo de Mazo:</label>
-            <select id="deckType">
-                <option value="major">Solo Arcanos Mayores</option>
-                <option value="full">Mazo Completo</option>
-            </select><br><br>
-            <label for="spreadType">Tipo de Tirada:</label>
-            <select id="spreadType">
-                <option value="one-card">Una Carta</option>
-                <option value="three-card">Tres Cartas</option>
-                </select><br><br>
-            <button id="startReading">Iniciar Lectura</button>
-        </div>
-        <div id="interpretation"></div>
+    <div id="ui-container">
+        <label for="deck-selection">Seleccione el mazo:</label>
+        <select id="deck-selection">
+            <option value="major">Arcanos Mayores</option>
+            <option value="full">Mazo Completo</option>
+        </select>
+        <br>
+        <label for="spread-selection">Seleccione el tipo de tirada:</label>
+        <select id="spread-selection">
+            <option value="one-card">Tirada de Una Carta</option>
+            <option value="three-cards">Tirada de Tres Cartas</option>
+            <option value="celtic-cross">Cruz Celta</option>
+        </select>
+        <br>
+        <button id="shuffle-button">Barajar</button>
+        <button id="draw-button">Realizar Tirada</button>
+        <button id="place-button">Colocar Carta</button>
     </div>
     <script type="module" src="scripts/main.js"></script>
 </body>
