@@ -9,7 +9,12 @@ renderer.xr.enabled = true; // Habilitar WebXR
 document.body.appendChild(renderer.domElement);
 
 // Agregar botón de AR
-document.body.appendChild(ARButton.createButton(renderer));
+try {
+    document.body.appendChild(ARButton.createButton(renderer));
+} catch (error) {
+    console.error("WebXR no está disponible en este dispositivo:", error);
+    alert("AR no es compatible con tu dispositivo o navegador.");
+}
 
 // Card Data (Example)
 const cardData = [
@@ -24,7 +29,12 @@ const cards = [];
 
 // Generar cartas
 cardData.forEach(card => {
-    const texture = textureLoader.load(card.texture);
+    const texture = textureLoader.load(
+        card.texture,
+        () => console.log(`Textura cargada para ${card.name}`),
+        undefined,
+        (error) => console.error(`Error cargando textura para ${card.name}:`, error)
+    );
     const material = new MeshBasicMaterial({ map: texture });
     const cardMesh = new Mesh(cardGeometry, material);
     cardMesh.userData = { id: card.id, name: card.name };
@@ -42,6 +52,10 @@ camera.position.z = 1;
 
 // Funcionalidad de barajar
 document.getElementById('shuffle-button').addEventListener('click', () => {
+    if (cards.length === 0) {
+        alert("No hay cartas disponibles para barajar.");
+        return;
+    }
     for (let i = cards.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [cards[i].position.z, cards[j].position.z] = [cards[j].position.z, cards[i].position.z];
