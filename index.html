@@ -2,41 +2,116 @@
 <html>
 <head>
     <title>Tarot AR</title>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            font-family: Arial, sans-serif;
+        }
+        canvas { 
+            display: block; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        #ar-button {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 100;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
         #ui-container {
-            position: absolute;
+            position: fixed;
             top: 10px;
             left: 10px;
-            z-index: 10;
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            max-width: 300px;
+        }
+        #interpretation-container {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            max-width: 300px;
+            max-height: 80vh;
+            overflow-y: auto;
         }
         button, select {
             font-size: 16px;
             padding: 10px;
             margin: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #e0e0e0;
+        }
+        select {
+            margin-bottom: 10px;
+            background-color: white;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        #interpretation-text {
+            white-space: pre-line;
+            line-height: 1.5;
+            color: #333;
+        }
+        .spread-info {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
+    <button id="ar-button">Iniciar AR</button>
     <div id="ui-container">
-        <label for="deck-selection">Seleccione el mazo:</label>
-        <select id="deck-selection">
-            <option value="major">Arcanos Mayores</option>
-            <option value="full">Mazo Completo</option>
-        </select>
-        <br>
         <label for="spread-selection">Seleccione el tipo de tirada:</label>
         <select id="spread-selection">
             <option value="one-card">Tirada de Una Carta</option>
             <option value="three-cards">Tirada de Tres Cartas</option>
             <option value="celtic-cross">Cruz Celta</option>
         </select>
-        <br>
+        <div class="spread-info" id="spread-info">
+            La tirada de una carta es ideal para preguntas específicas y respuestas claras.
+        </div>
         <button id="shuffle-button">Barajar</button>
         <button id="draw-button">Realizar Tirada</button>
-        <button id="place-button">Colocar Carta</button>
+        <button id="interpret-button">Interpretar Tirada</button>
     </div>
-    <script type="module" src="scripts/main.js"></script>
+    <div id="interpretation-container">
+        <h3>Interpretación de la Tirada</h3>
+        <div id="interpretation-text"></div>
+    </div>
+    <script src="scripts/main.js"></script>
 </body>
 </html>
