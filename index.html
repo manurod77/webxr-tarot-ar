@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tarot AR</title>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui-container {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+        button {
+            font-size: 16px;
+            padding: 10px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui-container">
+        <button id="shuffle-button">Barajar</button>
+        <button id="draw-button">Seleccionar Carta</button>
+        <button id="place-button">Colocar Carta</button>
+    </div>
+    <script type="module" src="scripts/main.js"></script>
+</body>
+</html>
