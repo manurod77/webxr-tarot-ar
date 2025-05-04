@@ -11,7 +11,7 @@
             left: 10px;
             z-index: 10;
         }
-        button {
+        button, select {
             font-size: 16px;
             padding: 10px;
             margin: 5px;
@@ -20,8 +20,21 @@
 </head>
 <body>
     <div id="ui-container">
+        <label for="deck-selection">Seleccione el mazo:</label>
+        <select id="deck-selection">
+            <option value="major">Arcanos Mayores</option>
+            <option value="full">Mazo Completo</option>
+        </select>
+        <br>
+        <label for="spread-selection">Seleccione el tipo de tirada:</label>
+        <select id="spread-selection">
+            <option value="one-card">Tirada de Una Carta</option>
+            <option value="three-cards">Tirada de Tres Cartas</option>
+            <option value="celtic-cross">Cruz Celta</option>
+        </select>
+        <br>
         <button id="shuffle-button">Barajar</button>
-        <button id="draw-button">Seleccionar Carta</button>
+        <button id="draw-button">Realizar Tirada</button>
         <button id="place-button">Colocar Carta</button>
     </div>
     <script type="module" src="scripts/main.js"></script>

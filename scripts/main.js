@@ -1,4 +1,4 @@
-import { Scene, PerspectiveCamera, WebGLRenderer, PlaneGeometry, MeshBasicMaterial, Mesh, TextureLoader } from 'three';
+import { Scene, PerspectiveCamera, WebGLRenderer, PlaneGeometry, MeshBasicMaterial, Mesh, CanvasTexture } from 'three';
 import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
 
 const scene = new Scene();
@@ -9,87 +9,130 @@ renderer.xr.enabled = true; // Habilitar WebXR
 document.body.appendChild(renderer.domElement);
 
 // Agregar botón de AR
-try {
-    document.body.appendChild(ARButton.createButton(renderer));
-} catch (error) {
-    console.error("WebXR no está disponible en este dispositivo:", error);
-    alert("AR no es compatible con tu dispositivo o navegador.");
-}
+document.body.appendChild(ARButton.createButton(renderer));
 
-// Card Data (Example)
-const cardData = [
-    { id: 1, name: "El Loco", texture: "https://pixabay.com/get/gf3b6d8b2c6f3e4c95f1aad7e56721c87a6b9b1f3f6aee53ec7a4264bb1c3f8f5f4b7ce4f6f5b4a3f6f4e8f5c6e8f7a7_640.jpg" },
-    { id: 2, name: "El Mago", texture: "https://pixabay.com/get/gf3b6d8b2c6f3e4c95f1aad7e56721c87a6b9b1f3f6aee53ec7a4264bb1c3f8f5f4b7ce4f6f5b4a3f6f4e8f5c6e8f7a7_640.jpg" }
-    // Add more cards as needed
+// Datos de las cartas del Tarot (78 cartas)
+const majorArcana = [
+    { id: 0, name: "El Loco" },
+    { id: 1, name: "El Mago" },
+    { id: 2, name: "La Sacerdotisa" },
+    { id: 3, name: "La Emperatriz" },
+    { id: 4, name: "El Emperador" },
+    { id: 5, name: "El Hierofante" },
+    { id: 6, name: "Los Enamorados" },
+    { id: 7, name: "El Carro" },
+    { id: 8, name: "La Justicia" },
+    { id: 9, name: "El Ermitaño" },
+    { id: 10, name: "La Rueda de la Fortuna" },
+    { id: 11, name: "La Fuerza" },
+    { id: 12, name: "El Colgado" },
+    { id: 13, name: "La Muerte" },
+    { id: 14, name: "La Templanza" },
+    { id: 15, name: "El Diablo" },
+    { id: 16, name: "La Torre" },
+    { id: 17, name: "La Estrella" },
+    { id: 18, name: "La Luna" },
+    { id: 19, name: "El Sol" },
+    { id: 20, name: "El Juicio" },
+    { id: 21, name: "El Mundo" }
 ];
 
-const textureLoader = new TextureLoader();
-const cardGeometry = new PlaneGeometry(0.3, 0.5); // Tamaño ajustado para AR
+const minorArcana = [
+    ...Array.from({ length: 14 }, (_, i) => ({ id: 22 + i, name: `Copas ${i + 1}` })),
+    ...Array.from({ length: 14 }, (_, i) => ({ id: 36 + i, name: `Espadas ${i + 1}` })),
+    ...Array.from({ length: 14 }, (_, i) => ({ id: 50 + i, name: `Bastos ${i + 1}` })),
+    ...Array.from({ length: 14 }, (_, i) => ({ id: 64 + i, name: `Oros ${i + 1}` }))
+];
+
+const fullDeck = [...majorArcana, ...minorArcana];
+
+let currentDeck = [...majorArcana]; // Por defecto, usar solo los Arcanos Mayores
+let selectedSpread = "one-card"; // Por defecto, tirada de una carta
+
+// Función para crear una textura con texto
+function createTextTexture(text) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = 256;
+    canvas.height = 256;
+
+    context.fillStyle = 'white';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.fillStyle = 'black';
+    context.font = '20px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    return new CanvasTexture(canvas);
+}
+
+const cardGeometry = new PlaneGeometry(0.3, 0.5);
 const cards = [];
 
-// Generar cartas
-cardData.forEach(card => {
-    const texture = textureLoader.load(
-        card.texture,
-        () => console.log(`Textura cargada para ${card.name}`),
-        undefined,
-        (error) => console.error(`Error cargando textura para ${card.name}:`, error)
-    );
-    const material = new MeshBasicMaterial({ map: texture });
-    const cardMesh = new Mesh(cardGeometry, material);
-    cardMesh.userData = { id: card.id, name: card.name };
-    cards.push(cardMesh);
-});
-
-// Posicionar las cartas inicialmente fuera del campo de visión
-cards.forEach((card, index) => {
-    card.position.set(0, -10, -index * 0.01); // Fuera de la vista inicial
-    scene.add(card);
-});
-
-// Configuración de la cámara
-camera.position.z = 1;
-
-// Funcionalidad de barajar
-document.getElementById('shuffle-button').addEventListener('click', () => {
-    if (cards.length === 0) {
-        alert("No hay cartas disponibles para barajar.");
-        return;
+// Función para cargar el mazo
+function loadDeck() {
+    while (cards.length > 0) {
+        const card = cards.pop();
+        scene.remove(card);
     }
-    for (let i = cards.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [cards[i].position.z, cards[j].position.z] = [cards[j].position.z, cards[i].position.z];
-    }
-    alert('Cartas barajadas');
-});
 
-// Funcionalidad de seleccionar carta
-document.getElementById('draw-button').addEventListener('click', () => {
-    if (cards.length > 0) {
-        const drawnCard = cards.pop();
-        drawnCard.position.set(0, 0, -0.5); // Frente a la cámara
-        scene.add(drawnCard);
-        alert(`Carta seleccionada: ${drawnCard.userData.name}`);
-    } else {
-        alert('No hay más cartas en el mazo');
-    }
-});
+    currentDeck.forEach(card => {
+        const texture = createTextTexture(`${card.id}: ${card.name}`);
+        const material = new MeshBasicMaterial({ map: texture });
+        const cardMesh = new Mesh(cardGeometry, material);
+        cardMesh.userData = { id: card.id, name: card.name };
+        cards.push(cardMesh);
+    });
 
-// Funcionalidad de colocar carta
-document.getElementById('place-button').addEventListener('click', () => {
-    const selectedCard = cards.find(card => card.position.z === -0.5);
-    if (selectedCard) {
-        selectedCard.position.set(Math.random() * 0.5 - 0.25, Math.random() * 0.5 - 0.25, -0.5); // Colocar en posición aleatoria frente a la cámara
-        alert(`Carta colocada: ${selectedCard.userData.name}`);
-    } else {
-        alert('No hay carta seleccionada para colocar');
-    }
-});
-
-// Bucle de animación
-function animate() {
-    renderer.setAnimationLoop(() => {
-        renderer.render(scene, camera);
+    cards.forEach((card, index) => {
+        card.position.set(0, -10, -index * 0.01);
+        scene.add(card);
     });
 }
-animate();
+
+// Función para realizar diferentes tipos de tiradas
+function performSpread() {
+    if (selectedSpread === "one-card") {
+        drawCards(1);
+    } else if (selectedSpread === "three-cards") {
+        drawCards(3);
+    } else if (selectedSpread === "celtic-cross") {
+        drawCards(10);
+    }
+}
+
+// Función para seleccionar cartas del mazo
+function drawCards(count) {
+    if (cards.length < count) {
+        alert("No hay suficientes cartas en el mazo.");
+        return;
+    }
+
+    for (let i = 0; i < count; i++) {
+        const card = cards.pop();
+        card.position.set(i * 0.4 - count * 0.2, 0, -0.5);
+        scene.add(card);
+    }
+}
+
+// Configuración de eventos
+document.getElementById('deck-selection').addEventListener('change', (event) => {
+    currentDeck = event.target.value === 'full' ? fullDeck : majorArcana;
+    loadDeck();
+});
+
+document.getElementById('spread-selection').addEventListener('change', (event) => {
+    selectedSpread = event.target.value;
+});
+
+document.getElementById('shuffle-button').addEventListener('click', () => {
+    cards.sort(() => Math.random() - 0.5);
+    alert("Cartas barajadas");
+});
+
+document.getElementById('draw-button').addEventListener('click', performSpread);
+
+loadDeck();
+renderer.setAnimationLoop(() => renderer.render(scene, camera));
