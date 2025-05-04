@@ -1,10 +1,15 @@
 import { Scene, PerspectiveCamera, WebGLRenderer, PlaneGeometry, MeshBasicMaterial, Mesh, TextureLoader } from 'three';
+import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
 
 const scene = new Scene();
 const camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new WebGLRenderer();
+const renderer = new WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.xr.enabled = true; // Habilitar WebXR
 document.body.appendChild(renderer.domElement);
+
+// Agregar botón de AR
+document.body.appendChild(ARButton.createButton(renderer));
 
 // Card Data (Example)
 const cardData = [
@@ -14,10 +19,10 @@ const cardData = [
 ];
 
 const textureLoader = new TextureLoader();
-const cardGeometry = new PlaneGeometry(1, 1.5);
+const cardGeometry = new PlaneGeometry(0.3, 0.5); // Tamaño ajustado para AR
 const cards = [];
 
-// Generate Card Meshes
+// Generar cartas
 cardData.forEach(card => {
     const texture = textureLoader.load(card.texture);
     const material = new MeshBasicMaterial({ map: texture });
@@ -26,16 +31,16 @@ cardData.forEach(card => {
     cards.push(cardMesh);
 });
 
-// Position Cards in Deck
+// Posicionar las cartas inicialmente fuera del campo de visión
 cards.forEach((card, index) => {
-    card.position.set(0, 0, -index * 0.01); // Slight stacking
+    card.position.set(0, -10, -index * 0.01); // Fuera de la vista inicial
     scene.add(card);
 });
 
-// Camera Settings
-camera.position.z = 5;
+// Configuración de la cámara
+camera.position.z = 1;
 
-// Shuffle Functionality
+// Funcionalidad de barajar
 document.getElementById('shuffle-button').addEventListener('click', () => {
     for (let i = cards.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -44,11 +49,11 @@ document.getElementById('shuffle-button').addEventListener('click', () => {
     alert('Cartas barajadas');
 });
 
-// Draw Card Functionality
+// Funcionalidad de seleccionar carta
 document.getElementById('draw-button').addEventListener('click', () => {
     if (cards.length > 0) {
         const drawnCard = cards.pop();
-        drawnCard.position.set(0, 0, 0);
+        drawnCard.position.set(0, 0, -0.5); // Frente a la cámara
         scene.add(drawnCard);
         alert(`Carta seleccionada: ${drawnCard.userData.name}`);
     } else {
@@ -56,20 +61,21 @@ document.getElementById('draw-button').addEventListener('click', () => {
     }
 });
 
-// Place Card Functionality
+// Funcionalidad de colocar carta
 document.getElementById('place-button').addEventListener('click', () => {
-    const selectedCard = cards.find(card => card.position.z === 0);
+    const selectedCard = cards.find(card => card.position.z === -0.5);
     if (selectedCard) {
-        selectedCard.position.set(Math.random() * 2 - 1, Math.random() * 2 - 1, 0); // Random placement
+        selectedCard.position.set(Math.random() * 0.5 - 0.25, Math.random() * 0.5 - 0.25, -0.5); // Colocar en posición aleatoria frente a la cámara
         alert(`Carta colocada: ${selectedCard.userData.name}`);
     } else {
         alert('No hay carta seleccionada para colocar');
     }
 });
 
-// Animation Loop
+// Bucle de animación
 function animate() {
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+    renderer.setAnimationLoop(() => {
+        renderer.render(scene, camera);
+    });
 }
 animate();
